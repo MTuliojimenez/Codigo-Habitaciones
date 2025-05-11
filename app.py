@@ -2,7 +2,7 @@
 from flask import Flask, jsonify, request, render_template
 import pandas as pd
 import os
-from waitress import serve
+from gunicorn.app.wsgiapp import WSGIApplication
 from flask_cors import CORS  # Para permitir peticiones desde el frontend
 import logging
 
@@ -153,8 +153,8 @@ def manifest():
     return app.send_static_file('manifest.json')
 
 if __name__ == '__main__':
-    port = 8000
-    host = "0.0.0.0"
-    logging.info(f"Iniciando servidor Waitress en {host}:{port}")
-    app.run(debug=True , host='0.0.0.0', port=8000)
-    #serve(app, host=host, port= port)
+    options = {
+        'bind': '0.0.0.0:8000',  # Puerto local para pruebas
+        'workers': 3,             # Ajusta según tus necesidades
+                }
+    WSGIApplication(app, options).run()
