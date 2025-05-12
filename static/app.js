@@ -1,5 +1,32 @@
 // app.js - Lógica de la aplicación Vue para sistema de terminales
- document.getElementById('current-year').textContent = new Date().getFullYear();
+document.getElementById('current-year').textContent = new Date().getFullYear();
+
+// Variables para la instalación
+let deferredPrompt;
+const installButton = document.getElementById('installButton');
+
+// Asegurarnos de que el botón esté inicializado correctamente
+document.addEventListener('DOMContentLoaded', function() {
+    // Asegurarse de que el botón existe antes de continuar
+    if (installButton) {
+        console.log('Botón de instalación inicializado');
+        
+        // Verificar si está en iOS
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches;
+        
+        // Si es iOS y no está en modo standalone, mostrar el botón
+        if (isIOS && !isInStandaloneMode) {
+            installButton.style.display = 'block';
+            
+            // Configurar el evento para iOS
+            installButton.addEventListener('click', showIOSInstallInstructions);
+        }
+    } else {
+        console.error('Botón de instalación no encontrado en el DOM');
+    }
+});
+
 // Registrar el Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
@@ -13,92 +40,105 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// Variables para la instalación
-let deferredPrompt;
-const installButton = document.getElementById('installButton');
-
-// Escuchar el evento beforeinstallprompt
+// Escuchar el evento beforeinstallprompt (para Android/Chrome)
 window.addEventListener('beforeinstallprompt', (e) => {
     // Prevenir que Chrome muestre automáticamente el prompt
     e.preventDefault();
+    
     // Guardar el evento para usarlo después
     deferredPrompt = e;
+    
     // Mostrar el botón de instalación
-    installButton.style.display = 'block';
+    if (installButton) {
+        installButton.style.display = 'block';
+        
+        // Asegurarnos de que el evento click esté configurado correctamente
+        // Primero removemos cualquier listener anterior para evitar duplicados
+        installButton.removeEventListener('click', handleInstallClick);
+        // Luego añadimos el nuevo listener
+        installButton.addEventListener('click', handleInstallClick);
+        
+        console.log('Prompt de instalación preparado y botón activado');
+    }
 });
 
-// Agregar evento al botón de instalación
-installButton.addEventListener('click', async () => {
+// Función para manejar el clic en el botón de instalación (Android/Chrome)
+async function handleInstallClick() {
+    console.log('Botón de instalación clickeado');
+    
     if (!deferredPrompt) {
+        console.log('No hay prompt de instalación disponible');
         return;
     }
+    
     // Mostrar el prompt de instalación
     deferredPrompt.prompt();
+    
     // Esperar a que el usuario responda al prompt
     const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User response to the install prompt: ${outcome}`);
+    console.log(`Respuesta del usuario al prompt de instalación: ${outcome}`);
+    
     // Ya no necesitamos el prompt
     deferredPrompt = null;
+    
     // Ocultar el botón de instalación
     installButton.style.display = 'none';
-});
+}
+
+// Función para mostrar instrucciones de instalación en iOS
+function showIOSInstallInstructions() {
+    console.log('Mostrando instrucciones para iOS');
+    
+    // Crear el modal
+    const modal = document.createElement('div');
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.right = '0';
+    modal.style.bottom = '0';
+    modal.style.backgroundColor = 'rgba(0,0,0,0.7)';
+    modal.style.zIndex = '9999';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+
+    const content = document.createElement('div');
+    content.style.backgroundColor = 'white';
+    content.style.padding = '20px';
+    content.style.borderRadius = '10px';
+    content.style.maxWidth = '90%';
+    content.style.textAlign = 'center';
+
+    content.innerHTML = `
+        <h4>Instalar en iPhone/iPad</h4>
+        <p>Para instalar esta app en tu dispositivo:</p>
+        <ol style="text-align: left">
+            <li>Toca el ícono <i class="fas fa-share-square"></i> de compartir</li>
+            <li>Desplázate y selecciona "Agregar a pantalla de inicio"</li>
+            <li>Toca "Agregar" para confirmar</li>
+        </ol>
+        <button id="closeModal" class="btn btn-primary mt-3">Entendido</button>
+    `;
+
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+
+    // Agregar evento al botón para cerrar el modal
+    document.getElementById('closeModal').addEventListener('click', function () {
+        document.body.removeChild(modal);
+    });
+}
 
 // Si la app ya está instalada, ocultar el botón
 window.addEventListener('appinstalled', () => {
     console.log('App ya instalada');
-    installButton.style.display = 'none';
+    if (installButton) {
+        installButton.style.display = 'none';
+    }
     deferredPrompt = null;
 });
 
-// Detección para dispositivos iOS donde el botón de instalación funciona diferente
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches;
-
-// Si es iOS y no está en modo standalone, mostrar instrucciones especiales
-if (isIOS && !isInStandaloneMode) {
-    installButton.addEventListener('click', function () {
-        // Mostrar modal o alert con instrucciones para iOS
-        const modal = document.createElement('div');
-        modal.style.position = 'fixed';
-        modal.style.top = '0';
-        modal.style.left = '0';
-        modal.style.right = '0';
-        modal.style.bottom = '0';
-        modal.style.backgroundColor = 'rgba(0,0,0,0.7)';
-        modal.style.zIndex = '9999';
-        modal.style.display = 'flex';
-        modal.style.alignItems = 'center';
-        modal.style.justifyContent = 'center';
-
-        const content = document.createElement('div');
-        content.style.backgroundColor = 'white';
-        content.style.padding = '20px';
-        content.style.borderRadius = '10px';
-        content.style.maxWidth = '90%';
-        content.style.textAlign = 'center';
-
-        content.innerHTML = `
-            <h4>Instalar en iPhone/iPad</h4>
-            <p>Para instalar esta app en tu dispositivo:</p>
-            <ol style="text-align: left">
-                <li>Toca el ícono <i class="fas fa-share-square"></i> de compartir</li>
-                <li>Desplázate y selecciona "Agregar a pantalla de inicio"</li>
-                <li>Toca "Agregar" para confirmar</li>
-            </ol>
-            <button id="closeModal" class="btn btn-primary mt-3">Entendido</button>
-        `;
-
-        modal.appendChild(content);
-        document.body.appendChild(modal);
-
-        document.getElementById('closeModal').addEventListener('click', function () {
-            document.body.removeChild(modal);
-        });
-    });
-
-    installButton.style.display = 'block';
-}
-
+// Inicialización de Vue
 new Vue({
     el: '#app',
     // Necesitamos usar delimitadores personalizados para evitar conflictos con Jinja2
@@ -323,7 +363,13 @@ new Vue({
             }
 
             return pines;
+        },
+        // Agregar método de carga de datos de prueba si es necesario
+        cargarDatosPrueba() {
+            // Implementación básica para evitar errores
+            if (!this.listaTerminales[this.hotelSeleccionado]) {
+                this.listaTerminales[this.hotelSeleccionado] = [];
+            }
         }
     }
-
 });
