@@ -1,6 +1,6 @@
 {
-  "name": "Dashboard de Códigos",
-  "short_name": "RobotDashboard",
+  "name": "Buscador de Códigos",
+  "short_name": "Codigos",
   "description": "Sistema de búsqueda y visualización de configuraciones de robots",
   "start_url": "/",
   "display": "standalone",

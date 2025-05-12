@@ -4,7 +4,7 @@ import pandas as pd
 import os
 from gunicorn.app.wsgiapp import WSGIApplication
 from flask_cors import CORS  # Para permitir peticiones desde el frontend
-import logging
+
 
 app = Flask(__name__)
 CORS(app)  # Habilitamos CORS para todas las rutas
@@ -89,15 +89,15 @@ def listar_terminales_por_hotel(hotel):
 
 # Buscar todos los terminales que coincidan con un ID
 @app.route('/api/terminales/id/<Codigo>', methods=['GET'])
-def get_terminales_by_id(terminal_id):
+def get_terminales_by_id(Codigo):
     df = load_data()
     if df is None:
         return jsonify({"error": "No se pudieron cargar los datos"}), 500
     
-    terminales = df[df['Codigo'].astype(str) == str(terminal_id)]
+    terminales = df[df['Codigo'].astype(str) == str(Codigo)]
     
     if terminales.empty:
-        return jsonify({"error": f"No se encontraron terminales con ID {terminal_id}"}), 404
+        return jsonify({"error": f"No se encontraron terminales con ID {Codigo}"}), 404
     print("SE USO /api/terminales/id/<Codigo>")
     results = terminales.to_dict(orient='records')
     return jsonify(results)
@@ -158,4 +158,5 @@ if __name__ == '__main__':
         'workers': 3,             # Ajusta según tus necesidades
                 }
     WSGIApplication(app, options).run()
+
     

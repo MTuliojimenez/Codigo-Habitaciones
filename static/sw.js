@@ -1,5 +1,5 @@
 // Paso 2: Crear un service worker (sw.js)
-const CACHE_NAME = 'robot-dashboard-v1';
+const CACHE_NAME = 'dashboard-v1';
 const urlsToCache = [
   '/',
   '/static/style2.css',

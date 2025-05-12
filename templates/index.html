@@ -43,16 +43,20 @@
     <div id="app" class="app-container">
         <!-- Header -->
         <header class="dashboard-header">
-            <div class="container">
-                <h1 class="dashboard-title">Dashboard de Códigos de Robot</h1>
-                <p class="dashboard-subtitle">Sistema de búsqueda de codigos y visualización de configuraciones</p>
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="dashboard-title">Sistema de búsqueda</h1>
+                <p class="dashboard-subtitle">codigos y visualización de configuraciones</p>
             </div>
-            <div id="install-container">
+            <div>
                 <button id="installButton" class="btn btn-light" style="display: none;">
                     <i class="fas fa-download me-2"></i>Instalar App
                 </button>
             </div>
-        </header>
+        </div>
+    </div>
+</header>
 
         <div class="container">
             <!-- Opciones de búsqueda con pestañas -->
@@ -68,7 +72,7 @@
                             <button class="nav-link active" id="hotel-tab" data-bs-toggle="tab"
                                 data-bs-target="#hotel-search" type="button" role="tab" aria-controls="hotel-search"
                                 aria-selected="true">
-                                <i class="fas fa-hotel me-2"></i>Por Hotel y Robot
+                                <i class="fas fa-hotel me-2"></i>Por Hotel y Nombre
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
@@ -219,7 +223,7 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-info">
-                    <div class="footer-logo">Dashboard</div>
+                   <!--<div class="footer-logo">Dashboard</div>--> 
                     <p>Sistema de visualización de códigos</p>
                 </div>
                 <div class="footer-contact">
@@ -240,7 +244,6 @@
         </div>
     </footer>
 
-    <!-- Script de la aplicación (mismo nombre de archivo que el original) -->
     <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 

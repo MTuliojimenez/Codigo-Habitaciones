@@ -1,12 +1,57 @@
-// app.js - Lógica de la aplicación Vue para sistema de terminales
+// Función para mostrar instrucciones de instalación en iOS
+function showIOSInstallInstructions() {
+    console.log('Mostrando instrucciones para iOS');
+    
+    // Crear el modal
+    const modal = document.createElement('div');
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.right = '0';
+    modal.style.bottom = '0';
+    modal.style.backgroundColor = 'rgba(0,0,0,0.7)';
+    modal.style.zIndex = '9999';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+
+    const content = document.createElement('div');
+    content.style.backgroundColor = 'white';
+    content.style.padding = '20px';
+    content.style.borderRadius = '10px';
+    content.style.maxWidth = '90%';
+    content.style.textAlign = 'center';
+
+    content.innerHTML = `
+        <h4>Instalar en iPhone/iPad</h4>
+        <p>Para instalar esta app en tu dispositivo:</p>
+        <ol style="text-align: left">
+            <li>Toca el ícono <i class="fas fa-share-square"></i> de compartir</li>
+            <li>Desplázate y selecciona "Agregar a pantalla de inicio"</li>
+            <li>Toca "Agregar" para confirmar</li>
+        </ol>
+        <button id="closeModal" class="btn btn-primary mt-3">Entendido</button>
+    `;
+
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+
+    // Agregar evento al botón para cerrar el modal
+    document.getElementById('closeModal').addEventListener('click', function () {
+        document.body.removeChild(modal);
+    });
+}// app.js - Lógica de la aplicación Vue para sistema de terminales
 document.getElementById('current-year').textContent = new Date().getFullYear();
 
 // Variables para la instalación
 let deferredPrompt;
-const installButton = document.getElementById('installButton');
+let installButton;
 
 // Asegurarnos de que el botón esté inicializado correctamente
 document.addEventListener('DOMContentLoaded', function() {
+    // Obtener el botón después de que el DOM esté completamente cargado
+    installButton = document.getElementById('installButton');
+    
     // Asegurarse de que el botón existe antes de continuar
     if (installButton) {
         console.log('Botón de instalación inicializado');
@@ -22,9 +67,32 @@ document.addEventListener('DOMContentLoaded', function() {
             // Configurar el evento para iOS
             installButton.addEventListener('click', showIOSInstallInstructions);
         }
+        
+        // PARA PRUEBAS: Detectar si estamos en modo de desarrollo/prueba con tamaño de móvil
+        const isMobileSize = window.innerWidth <= 768;
+        const isDevMode = window.location.hostname === 'localhost' || 
+                         window.location.hostname === '192.168.1.66' || 
+                         window.location.protocol === 'file:';
+        
+        // Si estamos en modo desarrollo y tamaño móvil, mostrar el botón para pruebas
+        if (isMobileSize && isDevMode) {
+            console.log('Modo de desarrollo y tamaño móvil detectado - mostrando botón para pruebas');
+            installButton.style.display = 'block';
+            
+            // En modo prueba, mostrar instrucciones de iOS o Android según el agente de usuario
+            if (isIOS) {
+                installButton.addEventListener('click', showIOSInstallInstructions);
+            } else {
+                // Para dispositivos no-iOS en modo prueba
+                installButton.addEventListener('click', showTestInstallInstructions);
+            }
+        }
     } else {
         console.error('Botón de instalación no encontrado en el DOM');
     }
+    
+    // Agregar listener para detectar cambios de tamaño (para pruebas)
+    window.addEventListener('resize', checkMobileSize);
 });
 
 // Registrar el Service Worker
@@ -85,11 +153,11 @@ async function handleInstallClick() {
     installButton.style.display = 'none';
 }
 
-// Función para mostrar instrucciones de instalación en iOS
-function showIOSInstallInstructions() {
-    console.log('Mostrando instrucciones para iOS');
+// Función para mostrar instrucciones de instalación para pruebas
+function showTestInstallInstructions() {
+    console.log('Mostrando instrucciones de instalación para pruebas');
     
-    // Crear el modal
+    // Crear el modal para pruebas
     const modal = document.createElement('div');
     modal.style.position = 'fixed';
     modal.style.top = '0';
@@ -110,13 +178,13 @@ function showIOSInstallInstructions() {
     content.style.textAlign = 'center';
 
     content.innerHTML = `
-        <h4>Instalar en iPhone/iPad</h4>
-        <p>Para instalar esta app en tu dispositivo:</p>
-        <ol style="text-align: left">
-            <li>Toca el ícono <i class="fas fa-share-square"></i> de compartir</li>
-            <li>Desplázate y selecciona "Agregar a pantalla de inicio"</li>
-            <li>Toca "Agregar" para confirmar</li>
-        </ol>
+        <h4>Modo de Prueba - Instalación de App</h4>
+        <p>Esta es una simulación del proceso de instalación en modo de prueba.</p>
+        <p>En un dispositivo real, se mostraría:</p>
+        <ul style="text-align: left">
+            <li>En Android/Chrome: El prompt nativo de instalación</li>
+            <li>En iOS: Instrucciones para añadir a la pantalla de inicio</li>
+        </ul>
         <button id="closeModal" class="btn btn-primary mt-3">Entendido</button>
     `;
 
@@ -127,6 +195,28 @@ function showIOSInstallInstructions() {
     document.getElementById('closeModal').addEventListener('click', function () {
         document.body.removeChild(modal);
     });
+}
+
+// Función para verificar el tamaño de pantalla y mostrar/ocultar el botón en pruebas
+function checkMobileSize() {
+    // Solo ejecutar si estamos en modo desarrollo
+    const isDevMode = window.location.hostname === 'localhost' || 
+                      window.location.hostname === '127.0.0.1' || 
+                      window.location.protocol === 'file:';
+    
+    if (!isDevMode || !installButton) return;
+    
+    const isMobileSize = window.innerWidth <= 768;
+    
+    if (isMobileSize) {
+        console.log('Tamaño móvil detectado - mostrando botón para pruebas');
+        installButton.style.display = 'block';
+    } else {
+        // Solo ocultar si no hay un prompt de instalación disponible
+        if (!deferredPrompt) {
+            installButton.style.display = 'none';
+        }
+    }
 }
 
 // Si la app ya está instalada, ocultar el botón
